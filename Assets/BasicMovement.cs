@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using Unity.VisualScripting;
 using UnityEditor.PackageManager;
 using UnityEngine;
 
@@ -11,12 +12,14 @@ public class BasicMovement : MonoBehaviour
 
     private CapsuleCollider2D capsuleCollider;
     private static int distToGround;
-    public int jumps;
+    private int jumps;
+    public int lives;
     // Start is called before the first frame update
     void Start()
     {
         gameObject.name = "Dino Man";
         capsuleCollider = GetComponent<CapsuleCollider2D>();
+        lives = 3;
     }
 
     // Update is called once per frame
@@ -29,11 +32,15 @@ public class BasicMovement : MonoBehaviour
 
         if (Input.GetKey(KeyCode.D) == true) 
         {
+            transform.localScale = new Vector3(1, 1, 1);
+          
             myRigidBody.velocity = new Vector2(moveStrength, myRigidBody.velocity.y);
         }
         
         if (Input.GetKey(KeyCode.A) == true) 
         {
+            transform.localScale = new Vector3(-1, 1, 1);
+        
             myRigidBody.velocity = new Vector2(-1*moveStrength, myRigidBody.velocity.y);
         }
     }
@@ -64,5 +71,14 @@ public class BasicMovement : MonoBehaviour
             return true;
         }
         return false;
+    }
+
+    private void OnCollisionEnter2D(Collision2D collision)
+    {
+        if(collision.gameObject.tag == "Cactus")
+        {
+            myRigidBody.velocity = new Vector2(-1*myRigidBody.velocity.x, myRigidBody.velocity.y);
+            lives -= 1;
+        }
     }
 }
