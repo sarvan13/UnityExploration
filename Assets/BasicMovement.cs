@@ -11,6 +11,7 @@ public class BasicMovement : MonoBehaviour
     public float moveStrength;
 
     private CapsuleCollider2D capsuleCollider;
+    private Animator anim;
     private static int distToGround;
     private int jumps;
     public int lives;
@@ -19,12 +20,15 @@ public class BasicMovement : MonoBehaviour
     {
         gameObject.name = "Dino Man";
         capsuleCollider = GetComponent<CapsuleCollider2D>();
+        anim = GetComponent<Animator>();
         lives = 3;
     }
 
     // Update is called once per frame
     void Update()
     {
+        anim.SetBool("grounded", checkGrounded());
+
         if (Input.GetKeyDown(KeyCode.W) == true || Input.GetKeyDown(KeyCode.Space) == true) 
         {
             PlayerJump();
@@ -35,13 +39,28 @@ public class BasicMovement : MonoBehaviour
             transform.localScale = new Vector3(1, 1, 1);
           
             myRigidBody.velocity = new Vector2(moveStrength, myRigidBody.velocity.y);
+
+            if (anim.GetBool("grounded"))
+            {
+                anim.SetBool("run", true);
+            }
         }
         
-        if (Input.GetKey(KeyCode.A) == true) 
+        else if (Input.GetKey(KeyCode.A) == true) 
         {
             transform.localScale = new Vector3(-1, 1, 1);
         
             myRigidBody.velocity = new Vector2(-1*moveStrength, myRigidBody.velocity.y);
+
+            if (anim.GetBool("grounded"))
+            {
+                anim.SetBool("run", true);
+            }
+        }
+
+        else 
+        {
+            anim.SetBool("run", false);
         }
     }
 
@@ -77,7 +96,7 @@ public class BasicMovement : MonoBehaviour
     {
         if(collision.gameObject.tag == "Cactus")
         {
-            myRigidBody.velocity = new Vector2(-1*myRigidBody.velocity.x, myRigidBody.velocity.y);
+            myRigidBody.velocity = new Vector2(-3*myRigidBody.velocity.x, 0);
             lives -= 1;
         }
     }
