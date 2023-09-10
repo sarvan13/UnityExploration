@@ -10,18 +10,18 @@ public class BasicMovement : MonoBehaviour
     public float jumpStrength;
     public float moveStrength;
 
+    [SerializeField] private Health playerHealth;
+
     private CapsuleCollider2D capsuleCollider;
     private Animator anim;
     private static int distToGround;
     private int jumps;
-    public int lives;
     // Start is called before the first frame update
     void Start()
     {
         gameObject.name = "Dino Man";
         capsuleCollider = GetComponent<CapsuleCollider2D>();
         anim = GetComponent<Animator>();
-        lives = 3;
     }
 
     // Update is called once per frame
@@ -97,7 +97,7 @@ public class BasicMovement : MonoBehaviour
         if(collision.gameObject.tag == "Cactus")
         {
             myRigidBody.velocity = new Vector2(-3*myRigidBody.velocity.x, 0);
-            lives -= 1;
+            playerHealth.takeDamage(1);
         }
     }
 }
