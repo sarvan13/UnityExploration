@@ -12,8 +12,6 @@ public class BasicMovement : MonoBehaviour
 
     [SerializeField] private Health playerHealth;
 
-    [SerializeField] private bool onWall;
-
     private CapsuleCollider2D capsuleCollider;
     private Animator anim;
     private static int distToGround;
@@ -30,10 +28,9 @@ public class BasicMovement : MonoBehaviour
     void Update()
     {
         anim.SetBool("grounded", checkGrounded());
+        anim.SetBool("onWall", checkWalled());
 
-        onWall = checkWalled();
-
-        if (onWall) jumps = 0;
+        if (anim.GetBool("onWall")) jumps = 0;
 
         if (Input.GetKeyDown(KeyCode.W) == true || Input.GetKeyDown(KeyCode.Space) == true) 
         {
@@ -51,7 +48,6 @@ public class BasicMovement : MonoBehaviour
                 anim.SetBool("run", true);
             }
         }
-        
         else if (Input.GetKey(KeyCode.A) == true) 
         {
             transform.localScale = new Vector3(-1, 1, 1);
@@ -63,7 +59,6 @@ public class BasicMovement : MonoBehaviour
                 anim.SetBool("run", true);
             }
         }
-
         else 
         {
             anim.SetBool("run", false);
@@ -72,13 +67,11 @@ public class BasicMovement : MonoBehaviour
 
     void PlayerJump()
     {
-        if (checkGrounded())
+        if (anim.GetBool("grounded"))
         {
             jumps = 0;
-            myRigidBody.velocity = new Vector2(myRigidBody.velocity.x, jumpStrength);
-            jumps += 1;
         }
-        else if (jumps < 2)
+        if (jumps < 2)
         {
             myRigidBody.velocity = new Vector2(myRigidBody.velocity.x, jumpStrength);
             jumps += 1;
