@@ -12,6 +12,8 @@ public class BasicMovement : MonoBehaviour
 
     [SerializeField] private Health playerHealth;
 
+    [SerializeField] private bool onWall;
+
     private CapsuleCollider2D capsuleCollider;
     private Animator anim;
     private static int distToGround;
@@ -28,6 +30,10 @@ public class BasicMovement : MonoBehaviour
     void Update()
     {
         anim.SetBool("grounded", checkGrounded());
+
+        onWall = checkWalled();
+
+        if (onWall) jumps = 0;
 
         if (Input.GetKeyDown(KeyCode.W) == true || Input.GetKeyDown(KeyCode.Space) == true) 
         {
@@ -89,6 +95,20 @@ public class BasicMovement : MonoBehaviour
         Debug.DrawLine(position, new Vector2(position.x, position.y - rayLength), Color.magenta, 2.5f);
 
         if (hit.collider != null && hit.collider.gameObject.name == "Ground")
+        {
+            return true;
+        }
+        return false;
+    }
+
+    bool checkWalled()
+    {
+        Vector2 position = transform.position;
+        float rayLength = 0.2f;
+        int layerMask = ~(1 << 9); //Exclude layer 9 (Player Layer)
+        RaycastHit2D hit = Physics2D.Raycast(position, new Vector2(transform.localScale.x, 0), rayLength, layerMask);
+
+        if (hit.collider != null && hit.collider.gameObject.name == "Wall")
         {
             return true;
         }
