@@ -12,12 +12,12 @@ TagManager:
   - 
   - Water
   - UI
-  - 
-  - 
-  - 
-  - 
-  - 
-  - 
+  - Foreground
+  - Background
+  - Ground
+  - Player
+  - Wall
+  - Platform
   - 
   - 
   - 
