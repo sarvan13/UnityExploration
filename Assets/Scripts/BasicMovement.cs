@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using Cainos.LucidEditor;
 using Unity.VisualScripting;
 using UnityEditor.PackageManager;
 using UnityEngine;
@@ -9,19 +10,21 @@ public class BasicMovement : MonoBehaviour
     public Rigidbody2D myRigidBody;
     public float jumpStrength;
     public float moveStrength;
-
     [SerializeField] private Health playerHealth;
-
     private CapsuleCollider2D capsuleCollider;
     private Animator anim;
-    private static int distToGround;
     private int jumps;
+    private Vector2 idleCapsuleSize;
+    [SerializeField] private float crouchedScale;
+    [SerializeField] private float crouchedCapsuleOffset;
+
     // Start is called before the first frame update
     void Start()
     {
         gameObject.name = "Player";
         capsuleCollider = GetComponent<CapsuleCollider2D>();
         anim = GetComponent<Animator>();
+        idleCapsuleSize = capsuleCollider.size;
     }
 
     // Update is called once per frame
@@ -36,7 +39,25 @@ public class BasicMovement : MonoBehaviour
         {
             PlayerJump();
         }
+        PlayerCrouch();
+        PlayerRun();
+    }
 
+    private void PlayerJump()
+    {
+        if (anim.GetBool("grounded"))
+        {
+            jumps = 0;
+        }
+        if (jumps < 2)
+        {
+            myRigidBody.velocity = new Vector2(myRigidBody.velocity.x, jumpStrength);
+            jumps += 1;
+        }
+    }
+
+    private void PlayerRun()
+    {
         if (Input.GetKey(KeyCode.D) == true) 
         {
             transform.localScale = new Vector3(1, 1, 1);
@@ -65,18 +86,20 @@ public class BasicMovement : MonoBehaviour
         }
     }
 
-    void PlayerJump()
+    private void PlayerCrouch()
     {
-        if (anim.GetBool("grounded"))
+        if (Input.GetKeyDown(KeyCode.S) == true)
         {
-            jumps = 0;
+            anim.SetBool("crouch", true);
+            capsuleCollider.size = new Vector2(idleCapsuleSize.x * crouchedScale, idleCapsuleSize.x * crouchedScale);
+            capsuleCollider.offset = new Vector2(capsuleCollider.offset.x, capsuleCollider.offset.y + crouchedCapsuleOffset);
         }
-        if (jumps < 2)
+        else if (Input.GetKeyUp(KeyCode.S) == true)
         {
-            myRigidBody.velocity = new Vector2(myRigidBody.velocity.x, jumpStrength);
-            jumps += 1;
+            anim.SetBool("crouch", false);
+            capsuleCollider.size = new Vector2(idleCapsuleSize.x, idleCapsuleSize.y);
+            capsuleCollider.offset = new Vector2(capsuleCollider.offset.x, capsuleCollider.offset.y - crouchedCapsuleOffset);
         }
-
     }
 
     bool checkGrounded()
@@ -85,7 +108,6 @@ public class BasicMovement : MonoBehaviour
         float rayLength = 0.2f;
         int layerMask = ~(1 << 9); //Exclude layer 9 (Player Layer)
         RaycastHit2D hit = Physics2D.Raycast(position, Vector2.down, rayLength, layerMask);
-        Debug.DrawLine(position, new Vector2(position.x, position.y - rayLength), Color.magenta, 2.5f);
 
         if (hit.collider != null && hit.collider.gameObject.name == "Ground")
         {
