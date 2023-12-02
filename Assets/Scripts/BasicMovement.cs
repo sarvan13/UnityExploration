@@ -33,8 +33,6 @@ public class BasicMovement : MonoBehaviour
         anim.SetBool("grounded", checkGrounded());
         anim.SetBool("onWall", checkWalled());
 
-        if (anim.GetBool("onWall")) jumps = 0;
-
         if (Input.GetKeyDown(KeyCode.W) == true || Input.GetKeyDown(KeyCode.Space) == true) 
         {
             PlayerJump();
@@ -45,13 +43,20 @@ public class BasicMovement : MonoBehaviour
 
     private void PlayerJump()
     {
+        float horizontalJump = myRigidBody.velocity.x;
+
         if (anim.GetBool("grounded"))
         {
             jumps = 0;
         }
+        else if (anim.GetBool("onWall"))
+        {
+            jumps = 1;
+            horizontalJump += 0.5f;
+        }
         if (jumps < 2)
         {
-            myRigidBody.velocity = new Vector2(myRigidBody.velocity.x, jumpStrength);
+            myRigidBody.velocity = new Vector2(horizontalJump, jumpStrength);
             jumps += 1;
         }
     }
@@ -109,7 +114,7 @@ public class BasicMovement : MonoBehaviour
         int layerMask = ~(1 << 9); //Exclude layer 9 (Player Layer)
         RaycastHit2D hit = Physics2D.Raycast(position, Vector2.down, rayLength, layerMask);
 
-        if (hit.collider != null && hit.collider.gameObject.name == "Ground")
+        if (hit.collider != null && (hit.collider.gameObject.layer == 8 || hit.collider.gameObject.layer == 9))
         {
             return true;
         }
@@ -122,10 +127,15 @@ public class BasicMovement : MonoBehaviour
         float rayLength = 0.2f;
         int layerMask = ~(1 << 9); //Exclude layer 9 (Player Layer)
         RaycastHit2D hit = Physics2D.Raycast(position, new Vector2(transform.localScale.x, 0), rayLength, layerMask);
+        Debug.DrawLine(position, new Vector2(position.x + transform.localScale.x * rayLength, position.y), Color.magenta, 0.5f);
 
-        if (hit.collider != null && hit.collider.gameObject.name == "Wall")
+        if (hit.collider != null && hit.collider.gameObject.layer == 10)
         {
             return true;
+        }
+        else if (hit.collider != null)
+        {
+            Debug.Log(hit.collider.gameObject.layer);
         }
         return false;
     }
