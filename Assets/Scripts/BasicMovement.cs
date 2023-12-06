@@ -17,6 +17,8 @@ public class BasicMovement : MonoBehaviour
     private Vector2 idleCapsuleSize;
     [SerializeField] private float crouchedScale;
     [SerializeField] private float crouchedCapsuleOffset;
+    private float wallCoolDown;
+    [SerializeField] private float wallCoolDownTime = 0.3f;
 
     // Start is called before the first frame update
     void Start()
@@ -32,6 +34,7 @@ public class BasicMovement : MonoBehaviour
     {
         anim.SetBool("grounded", checkGrounded());
         anim.SetBool("onWall", checkWalled());
+        wallCoolDown -= Time.deltaTime;
 
         if (Input.GetKeyDown(KeyCode.W) == true || Input.GetKeyDown(KeyCode.Space) == true) 
         {
@@ -49,10 +52,11 @@ public class BasicMovement : MonoBehaviour
         {
             jumps = 0;
         }
-        else if (anim.GetBool("onWall"))
+        else if (anim.GetBool("onWall") && wallCoolDown <= 0f)
         {
             jumps = 1;
-            horizontalJump += 0.5f;
+            horizontalJump -= transform.localScale.x;
+            wallCoolDown = wallCoolDownTime;
         }
         if (jumps < 2)
         {

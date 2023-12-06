@@ -2503,6 +2503,7 @@ MonoBehaviour:
   playerHealth: {fileID: 638421795}
   crouchedScale: 2
   crouchedCapsuleOffset: 0.045
+  wallCoolDownTime: 0.3
 --- !u!114 &638421795
 MonoBehaviour:
   m_ObjectHideFlags: 0
