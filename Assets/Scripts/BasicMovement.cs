@@ -17,7 +17,7 @@ public class BasicMovement : MonoBehaviour
     private Vector2 idleCapsuleSize;
     [SerializeField] private float crouchedScale;
     [SerializeField] private float crouchedCapsuleOffset;
-    private float wallCoolDown;
+    private float wallJumpCoolDown;
     [SerializeField] private float wallCoolDownTime = 0.3f;
 
     // Start is called before the first frame update
@@ -34,7 +34,10 @@ public class BasicMovement : MonoBehaviour
     {
         anim.SetBool("grounded", checkGrounded());
         anim.SetBool("onWall", checkWalled());
-        wallCoolDown -= Time.deltaTime;
+        wallJumpCoolDown -= Time.deltaTime;
+
+        if (anim.GetBool("onWall")) wallGravity();
+        else myRigidBody.gravityScale = 1f;
 
         if (Input.GetKeyDown(KeyCode.W) == true || Input.GetKeyDown(KeyCode.Space) == true) 
         {
@@ -52,11 +55,11 @@ public class BasicMovement : MonoBehaviour
         {
             jumps = 0;
         }
-        else if (anim.GetBool("onWall") && wallCoolDown <= 0f)
+        else if (anim.GetBool("onWall") && wallJumpCoolDown <= 0f)
         {
             jumps = 1;
             horizontalJump -= transform.localScale.x;
-            wallCoolDown = wallCoolDownTime;
+            wallJumpCoolDown = wallCoolDownTime;
         }
         if (jumps < 2)
         {
@@ -67,7 +70,7 @@ public class BasicMovement : MonoBehaviour
 
     private void PlayerRun()
     {
-        if (Input.GetKey(KeyCode.D) == true) 
+        if (Input.GetKey(KeyCode.D) == true && !anim.GetBool("onWall")) 
         {
             transform.localScale = new Vector3(1, 1, 1);
           
@@ -78,7 +81,7 @@ public class BasicMovement : MonoBehaviour
                 anim.SetBool("run", true);
             }
         }
-        else if (Input.GetKey(KeyCode.A) == true) 
+        else if (Input.GetKey(KeyCode.A) == true && !anim.GetBool("onWall")) 
         {
             transform.localScale = new Vector3(-1, 1, 1);
         
@@ -142,6 +145,51 @@ public class BasicMovement : MonoBehaviour
             Debug.Log(hit.collider.gameObject.layer);
         }
         return false;
+    }
+
+    private void wallGravity()
+    {
+        myRigidBody.gravityScale = 0.2f;
+        jumps = 1;
+
+        if (transform.localScale.x < 0)
+        {
+            // Wall is on the left
+            if (Input.GetKey(KeyCode.A)) 
+            {
+                // Stay in place if pressing into the wall
+                myRigidBody.velocity = Vector2.zero;
+                myRigidBody.gravityScale = 0f;
+            }
+            else if (Input.GetKeyDown(KeyCode.D))
+            {
+                // Fall at normal speed if pressing off the wall
+                myRigidBody.gravityScale = 1f;
+                myRigidBody.velocity = new Vector2(-1f * transform.localScale.x, 0f);
+            }
+        }
+        else
+        {
+            // Wall is on the right
+            if (Input.GetKey(KeyCode.D))
+            {
+                // Stay in place if pressing into the wall
+                myRigidBody.velocity = Vector2.zero;
+                myRigidBody.gravityScale = 0f;
+            }
+            else if (Input.GetKeyDown(KeyCode.A))
+            {
+                // Fall at normal speed if pressing off the wall
+                myRigidBody.gravityScale = 1f;
+                myRigidBody.velocity = new Vector2(-1f*transform.localScale.x, 0f);
+            }
+        }
+
+        if (Input.GetKey(KeyCode.W) || Input.GetKey(KeyCode.Space))
+        {
+            myRigidBody.gravityScale = 1f;
+        }
+    
     }
 
     private void OnCollisionEnter2D(Collision2D collision)
