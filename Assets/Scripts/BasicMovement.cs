@@ -13,7 +13,7 @@ public class BasicMovement : MonoBehaviour
     [SerializeField] private Health playerHealth;
     private CapsuleCollider2D capsuleCollider;
     private Animator anim;
-    private int jumps;
+    public int jumps;
     private Vector2 idleCapsuleSize;
     [SerializeField] private float crouchedScale;
     [SerializeField] private float crouchedCapsuleOffset;
@@ -131,7 +131,7 @@ public class BasicMovement : MonoBehaviour
     bool checkWalled()
     {
         Vector2 position = transform.position;
-        float rayLength = 0.2f;
+        float rayLength = 0.1f;
         int layerMask = ~(1 << 9); //Exclude layer 9 (Player Layer)
         RaycastHit2D hit = Physics2D.Raycast(position, new Vector2(transform.localScale.x, 0), rayLength, layerMask);
         Debug.DrawLine(position, new Vector2(position.x + transform.localScale.x * rayLength, position.y), Color.magenta, 0.5f);
