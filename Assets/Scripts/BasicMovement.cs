@@ -12,8 +12,9 @@ public class BasicMovement : MonoBehaviour
     public float moveStrength;
     [SerializeField] private Health playerHealth;
     private CapsuleCollider2D capsuleCollider;
-    private Animator anim;
-    public int jumps;
+    public Animator anim;
+    private int jumps;
+    public bool canMove = true;
     private Vector2 idleCapsuleSize;
     [SerializeField] private float crouchedScale;
     [SerializeField] private float crouchedCapsuleOffset;
@@ -32,39 +33,40 @@ public class BasicMovement : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        anim.SetBool("grounded", checkGrounded());
-        anim.SetBool("onWall", checkWalled());
-        wallJumpCoolDown -= Time.deltaTime;
-
-        if (anim.GetBool("onWall")) wallGravity();
-        else myRigidBody.gravityScale = 1f;
-
-        if (Input.GetKeyDown(KeyCode.W) == true || Input.GetKeyDown(KeyCode.Space) == true) 
+        if (canMove)
         {
+            anim.SetBool("grounded", checkGrounded());
+            anim.SetBool("onWall", checkWalled());
+            wallJumpCoolDown -= Time.deltaTime;
+            if (anim.GetBool("onWall")) wallGravity();
+            else myRigidBody.gravityScale = 1f;
             PlayerJump();
+            PlayerCrouch();
+            PlayerRun();
         }
-        PlayerCrouch();
-        PlayerRun();
     }
 
     private void PlayerJump()
     {
-        float horizontalJump = myRigidBody.velocity.x;
+        if (Input.GetKeyDown(KeyCode.W) == true || Input.GetKeyDown(KeyCode.Space) == true) 
+        {
+            float horizontalJump = myRigidBody.velocity.x;
 
-        if (anim.GetBool("grounded"))
-        {
-            jumps = 0;
-        }
-        else if (anim.GetBool("onWall") && wallJumpCoolDown <= 0f)
-        {
-            jumps = 1;
-            horizontalJump -= transform.localScale.x;
-            wallJumpCoolDown = wallCoolDownTime;
-        }
-        if (jumps < 2)
-        {
-            myRigidBody.velocity = new Vector2(horizontalJump, jumpStrength);
-            jumps += 1;
+            if (anim.GetBool("grounded"))
+            {
+                jumps = 0;
+            }
+            else if (anim.GetBool("onWall") && wallJumpCoolDown <= 0f)
+            {
+                jumps = 1;
+                horizontalJump -= transform.localScale.x;
+                wallJumpCoolDown = wallCoolDownTime;
+            }
+            if (jumps < 2)
+            {
+                myRigidBody.velocity = new Vector2(horizontalJump, jumpStrength);
+                jumps += 1;
+            }
         }
     }
 
@@ -114,12 +116,13 @@ public class BasicMovement : MonoBehaviour
         }
     }
 
-    bool checkGrounded()
+    public bool checkGrounded()
     {
-        Vector2 position = transform.position;
+        Vector2 position = myRigidBody.position;
         float rayLength = 0.2f;
-        int layerMask = ~(1 << 9); //Exclude layer 9 (Player Layer)
+        int layerMask = (1 << 8); //Only look on the ground layer
         RaycastHit2D hit = Physics2D.Raycast(position, Vector2.down, rayLength, layerMask);
+        Debug.DrawLine(position, new Vector2(position.x, position.y - rayLength), Color.magenta, 0.5f);
 
         if (hit.collider != null && (hit.collider.gameObject.layer == 8 || hit.collider.gameObject.layer == 9))
         {
@@ -128,13 +131,13 @@ public class BasicMovement : MonoBehaviour
         return false;
     }
 
-    bool checkWalled()
+    public bool checkWalled()
     {
-        Vector2 position = transform.position;
+        Vector2 position = myRigidBody.position;
         float rayLength = 0.1f;
-        int layerMask = ~(1 << 9); //Exclude layer 9 (Player Layer)
+        int layerMask = (1 << 10); //Only look on the ground layer
         RaycastHit2D hit = Physics2D.Raycast(position, new Vector2(transform.localScale.x, 0), rayLength, layerMask);
-        Debug.DrawLine(position, new Vector2(position.x + transform.localScale.x * rayLength, position.y), Color.magenta, 0.5f);
+        //Debug.DrawLine(position, new Vector2(position.x + transform.localScale.x * rayLength, position.y), Color.magenta, 0.5f);
 
         if (hit.collider != null && hit.collider.gameObject.layer == 10)
         {
@@ -142,7 +145,7 @@ public class BasicMovement : MonoBehaviour
         }
         else if (hit.collider != null)
         {
-            Debug.Log(hit.collider.gameObject.layer);
+            // Debug.Log(hit.collider.gameObject.layer);
         }
         return false;
     }
@@ -190,6 +193,16 @@ public class BasicMovement : MonoBehaviour
             myRigidBody.gravityScale = 1f;
         }
     
+    }
+
+    public void setCanMove(bool canMove)
+    {
+        this.canMove = canMove;
+    }
+
+    public bool getCanMove()
+    {
+        return canMove;
     }
 
     private void OnCollisionEnter2D(Collision2D collision)
